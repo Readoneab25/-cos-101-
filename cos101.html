@@ -1,0 +1,247 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>COS101 Modules 1-2 — Interactive Quiz</title>
+  <style>
+    :root{--bg:#0f172a;--card:#111827;--accent:#06b6d4;--muted:#94a3b8;--white:#e6eef6}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;background:linear-gradient(180deg,#071022 0%, #071a2a 100%);color:var(--white);-webkit-font-smoothing:antialiased}
+    .wrap{max-width:920px;margin:28px auto;padding:20px}
+    header{display:flex;align-items:center;gap:16px}
+    h1{margin:0;font-size:20px}
+    .meta{color:var(--muted);font-size:13px}
+    .card{background:rgba(255,255,255,0.03);padding:20px;border-radius:12px;margin-top:18px;box-shadow:0 6px 24px rgba(2,6,23,0.6)}
+    .question{font-size:18px;margin-bottom:12px}
+    .choices{display:flex;flex-direction:column;gap:8px}
+    .choice{background:#072031;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+    .choice:hover{transform:translateY(-2px)}
+    .choice.selected{outline:3px solid rgba(6,182,212,0.12);background:rgba(6,182,212,0.04)}
+    .controls{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+    button{background:var(--accent);color:#042029;border:0;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600}
+    button.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--white)}
+    .progress{height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#60a5fa);width:0%}
+    .footer{margin-top:16px;color:var(--muted);font-size:13px}
+    .result{padding:18px;border-radius:10px;background:linear-gradient(180deg, rgba(2,6,23,0.85), rgba(2,6,23,0.6));}
+    .review{margin-top:12px}
+    .q-review{background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;margin-bottom:10px}
+    @media(max-width:560px){.wrap{padding:12px}h1{font-size:18px}.question{font-size:16px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>COS101 — Modules 1 &amp; 2: Interactive MCQ Quiz</h1>
+        <div class="meta">63 multiple-choice questions • Modules covered: Basic Computing Concepts &amp; Basic Components</div>
+      </div>
+    </header><div class="card" id="quiz-card">
+  <div class="progress" aria-hidden><i id="progress-bar"></i></div>
+  <div style="height:14px"></div>
+  <div id="q-area">
+    <!-- question inserted here -->
+  </div>
+
+  <div class="controls">
+    <div style="display:flex;gap:8px">
+      <button id="prevBtn" class="secondary">Previous</button>
+      <button id="nextBtn">Next</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button id="submitBtn" class="secondary">Submit</button>
+      <div style="color:var(--muted);font-size:13px">Q <span id="q-num">1</span> / <span id="q-total">63</span></div>
+    </div>
+  </div>
+
+  <div class="footer">Tip: Select an answer and press Next. You can review answers after submission.</div>
+</div>
+
+<div id="result-area" style="display:none" class="card">
+  <div class="result">
+    <h2 id="score-title"></h2>
+    <p id="score-summary" class="meta"></p>
+  </div>
+  <div class="review" id="review-list"></div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button id="retryBtn">Retake Quiz</button>
+    <button id="exportBtn" class="secondary">Export Results</button>
+  </div>
+</div>
+<br><br><br>
+  <a href="https://wa.me/+2349036795652"><button>Contact The Developer</button></a>
+  <h2>Designed by Readone</h2>
+  </div>
+  
+  <script>
+// Questions array (Modules 1 & 2 objective style). Each question: text, choices array, correct index (0-based)
+const QUESTIONS = [
+  {q: "A computer can be described as an electronic device that accepts _____, processes it, and produces information.", c:["Programs","Data","Output","Input"], a:1},
+  {q: "The process of converting data into meaningful form is called:", c:["Programming","Input","Information processing","Storage"], a:2},
+  {q: "Which of the following is not a type of data?", c:["Numeric","Alphabetic","Alphanumeric","Logic"], a:3},
+  {q: "Who is regarded as the Father of Modern Computer?", c:["Blaise Pascal","Charles Babbage","Joseph Jacquard","John Von Neumann"], a:1},
+  {q: "The Pascaline was invented to perform:", c:["Addition and subtraction","Multiplication and division","Logical comparison","Data storage"], a:0},
+  {q: "Who invented the punched card system?", c:["Charles Babbage","Herman Hollerith","Ada Lovelace","Philip Emeagwali"], a:1},
+  {q: "Who is recognized as the first computer programmer?", c:["Grace Hopper","Ada Lovelace","Blaise Pascal","John Von Neumann"], a:1},
+  {q: "Which company did Herman Hollerith’s firm later become?", c:["Apple","IBM","Intel","Microsoft"], a:1},
+  {q: "The concept of a 'stored program' was introduced by:", c:["Charles Babbage","John Von Neumann","Howard Aiken","Grace Hopper"], a:1},
+  {q: "Philip Emeagwali won the 1989 Gordon Bell Prize for:", c:["Creating Pascaline","Developing the Analytic Engine","Inventing a formula for parallel computation","Writing the first compiler"], a:2},
+
+  // Module1 more
+  {q: "Data that have been processed into meaningful form are called:", c:["Data","Program","Information","Storage"], a:2},
+  {q: "Numeric data consists of digits which are:", c:["0–9","A–Z","0–1","Symbols"], a:0},
+  {q: "An example of alphanumeric data is:", c:["55","Malik","AE 731 LRN","True"], a:2},
+  {q: "Logical comparison tests whether one data item is greater than, equal to, or less than another — this is used to make decisions in", c:["Text editing","Printing","Computer programs","Paper records"], a:2},
+  {q: "The Abacus is known to have been used as far back as:", c:["500 B.C.","1200 A.D.","1600 A.D.","1000 B.C."], a:0},
+  {q: "On a modern abacus, how many beads are arranged in the lower zone on each wire?", c:["2","5","7","10"], a:1},
+  {q: "Blaise Pascal completed the first model of his Pascaline in which year (as presented)?", c:["1642","1701","1801","1623"], a:0},
+  {q: "Joseph Marie Jacquard’s loom produced patterns based on:", c:["Punched wooden cards","Beads","Electrical switches","Magnetic tape"], a:0},
+  {q: "Charles Babbage planned to provide programs for his Analytic Engine using:", c:["Punched cards","Magnetic tape","Diskettes","Paper tape"], a:0},
+  {q: "Ada Lovelace is credited with first recognizing the importance of which programming concept?", c:["Multiprocessing","Looping","Networking","Encryption"], a:1},
+
+  {q: "Hollerith’s punch card machine was used to process which U.S. census year?", c:["1890","1900","1880","1910"], a:0},
+  {q: "Von Neumann’s machine architecture includes which of the following components?", c:["Storage, Control, Arithmetic, Input/Output","Only Arithmetic and Storage","Only Control and IO","Only Storage and Control"], a:0},
+  {q: "The stored-program concept implied that operations are controlled by a program stored in the computer’s _____", c:["printer","memory","keyboard","paper"], a:1},
+  {q: "The Atanasoff–Berry Computer was first to employ which arithmetic?", c:["Decimal","Binary","Hexadecimal","Ternary"], a:1},
+  {q: "Howard Aiken’s Harvard Mark I ran non-stop for how many years?", c:["5","15","1","30"], a:1},
+  {q: "Grace Hopper invented the first high-level language named:", c:["Flow-matic","FORTRAN","COBOL","BASIC"], a:0},
+
+  {q: "Grace Hopper is credited with constructing the world's first _____", c:["compiler","operating system","database","spreadsheet"], a:0},
+  {q: "Bill Gates announced Microsoft Windows on which date (as in the notes)?", c:["November 10, 1983","January 1, 1980","July 4, 1985","December 25, 1990"], a:0},
+  {q: "Emeagwali’s formula used approximately how many separate processors?", c:["65,000","1,000","100","10,000"], a:0},
+  {q: "One positive impact of information processing listed is:", c:["Information overload","Increased efficiency and productivity","Loss of jobs","Social isolation"], a:1},
+  {q: "One negative impact listed is:", c:["Improved accessibility","Information overload and noise","Better decision-making","Economic growth"], a:1},
+  {q: "Which of the following is an example of a digital application for productivity given in the notes?", c:["Netflix","Microsoft Office","Spotify","Uber"], a:1},
+  {q: "Which of these is listed as an emerging technology/trend?", c:["Horse-drawn carriage","Quantum Computing","Typewriter","Abacus"], a:1},
+
+  // Module2 start
+  {q: "The physical parts of a computer system are known as:", c:["Software","Hardware","Humanware","Orgware"], a:1},
+  {q: "The CPU is made up of:", c:["ALU, CU, and Memory","Mouse, Keyboard, and Monitor","Input and Output devices","CPU and ROM"], a:0},
+  {q: "The unit that performs all arithmetic and logical operations is called:", c:["Control Unit","ALU","Input Unit","Storage Unit"], a:1},
+  {q: "Which of the following is an input device?", c:["Projector","Printer","Scanner","Speaker"], a:2},
+  {q: "Which of the following is not an auxiliary storage device?", c:["Flash drive","Magnetic tape","SSD","ROM"], a:3},
+  {q: "Which software manages computer hardware and provides a user interface?", c:["Compiler","Operating System","Interpreter","Assembler"], a:1},
+  {q: "Which language translator converts high-level language into machine code line by line?", c:["Compiler","Interpreter","Assembler","Loader"], a:1},
+  {q: "The term humanware refers to:", c:["Input devices","Computer users and professionals","Software programs","Storage devices"], a:1},
+  {q: "Who among the following is responsible for studying an existing system and designing a new one?", c:["Programmer","System Analyst","Data Entry Operator","End User"], a:1},
+  {q: "Which of the following software types is written for specific user needs?", c:["System software","Utility software","Application software","Firmware"], a:2},
+
+  {q: "Main storage is used for storing which of the following?", c:["Only data","Data and instructions for processing","Only output","Only programs on disk"], a:1},
+  {q: "Peripherals are placed into which three categories?", c:["Input, Output, Auxiliary storage","CPU, Memory, ALU","OS, Apps, Utilities","Users, Admins, Managers"], a:0},
+  {q: "Which of these is an example of an auxiliary storage device listed?", c:["Hard disk","Monitor","Keyboard","CPU"], a:0},
+  {q: "Which translator converts assembly language into machine language?", c:["Compiler","Interpreter","Assembler","Linker"], a:2},
+  {q: "What does a linker do?", c:["Places executable into memory","Combines object files and libraries into one executable","Translates high-level code to machine code","Edits text"], a:1},
+  {q: "What does a loader do?", c:["Places executable into memory and makes it ready for execution","Combines object files","Sorts records","Copies data"], a:0},
+  {q: "Which of the following is a utility program?", c:["Sort Utility","Oracle DBMS","MS Word","Linux Kernel"], a:0},
+  {q: "An example of an application package in the notes is which of the following?", c:["MS-Excel","Assembler","Linker","Loader"], a:0},
+  {q: "The person who writes the sequence of instructions to be carried out by the computer is called:", c:["System Analyst","Programmer","Data Processing Manager","End User"], a:1},
+  {q: "A Database Management System (DBMS) is used for:", c:["Creation, storage and retrieval of a database","Only printing reports","Only graphics design","Only arithmetic"], a:0}
+];
+
+let state = { idx:0, answers: Array(QUESTIONS.length).fill(null) };
+const total = QUESTIONS.length;
+
+function renderQuestion(){
+  const area = document.getElementById('q-area');
+  const q = QUESTIONS[state.idx];
+  document.getElementById('q-num').textContent = state.idx+1;
+  document.getElementById('q-total').textContent = total;
+  const progress = Math.round((state.idx/total)*100);
+  document.getElementById('progress-bar').style.width = progress + '%';
+
+  area.innerHTML = '';
+  const qEl = document.createElement('div');
+  qEl.innerHTML = `<div class="question">${state.idx+1}. ${q.q}</div>`;
+  const choices = document.createElement('div'); choices.className='choices';
+  q.c.forEach((choice, i)=>{
+    const btn = document.createElement('div');
+    btn.className='choice'; btn.tabIndex=0; btn.textContent = String.fromCharCode(65+i)+'. '+choice;
+    if(state.answers[state.idx]===i) btn.classList.add('selected');
+    btn.addEventListener('click', ()=>{
+      // select
+      state.answers[state.idx]=i;
+      document.querySelectorAll('.choice').forEach(el=>el.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+    choices.appendChild(btn);
+  });
+  qEl.appendChild(choices);
+  area.appendChild(qEl);
+}
+
+document.getElementById('nextBtn').addEventListener('click', ()=>{
+  if(state.idx < total-1) state.idx++;
+  renderQuestion();
+});
+
+document.getElementById('prevBtn').addEventListener('click', ()=>{
+  if(state.idx > 0) state.idx--;
+  renderQuestion();
+});
+
+document.getElementById('submitBtn').addEventListener('click', ()=>{
+  // confirm and grade
+  const unanswered = state.answers.filter(a=>a===null).length;
+  if(unanswered>0){
+    if(!confirm(`You have ${unanswered} unanswered questions. Submit anyway?`)) return;
+  }
+  gradeQuiz();
+});
+
+function gradeQuiz(){
+  let correct=0;
+  const review = [];
+  for(let i=0;i<total;i++){
+    const user = state.answers[i];
+    const correctIdx = QUESTIONS[i].a;
+    const ok = user===correctIdx;
+    if(ok) correct++;
+    review.push({i, q:QUESTIONS[i].q, choices:QUESTIONS[i].c, user, correctIdx, ok});
+  }
+  showResult(correct, review);
+}
+
+function showResult(score, review){
+  document.getElementById('quiz-card').style.display='none';
+  const area = document.getElementById('result-area');
+  area.style.display='block';
+  const title = document.getElementById('score-title');
+  title.textContent = `You scored ${score} out of ${total}`;
+  const pct = Math.round((score/total)*100);
+  document.getElementById('score-summary').textContent = `Percentage: ${pct}%`;
+
+  const list = document.getElementById('review-list'); list.innerHTML='';
+  review.forEach(item=>{
+    const div = document.createElement('div'); div.className='q-review';
+    const head = document.createElement('div'); head.style.fontWeight='700'; head.textContent = `${item.i+1}. ${item.q}`;
+    const userAns = document.createElement('div'); userAns.style.marginTop='6px';
+    const ua = item.user===null? 'No answer' : String.fromCharCode(65+item.user)+'. '+item.choices[item.user];
+    const ca = String.fromCharCode(65+item.correctIdx)+'. '+item.choices[item.correctIdx];
+    userAns.innerHTML = `<div><strong>Your answer:</strong> ${ua}</div><div style="margin-top:4px"><strong>Correct answer:</strong> ${ca}</div>`;
+    if(item.ok) userAns.style.color='lightgreen'; else userAns.style.color='#fca5a5';
+    div.appendChild(head); div.appendChild(userAns);
+    list.appendChild(div);
+  });
+}
+
+document.getElementById('retryBtn').addEventListener('click', ()=>{
+  // reset
+  state = { idx:0, answers: Array(total).fill(null) };
+  document.getElementById('result-area').style.display='none';
+  document.getElementById('quiz-card').style.display='block';
+  renderQuestion();
+});
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const data = {answers: state.answers, questions: QUESTIONS};
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'cos101_module1-2_results.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+});
+
+// init
+renderQuestion();
+</script></body>
+</html>
